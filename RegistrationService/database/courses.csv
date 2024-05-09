@@ -1,0 +1,4 @@
+name,department,credits,maxCapacity,enrolledStudents,prerequisite
+Course 1,Department A,3,30,20,Course 3
+Course 2,Department B,4,25,22,Course 1
+Course 3,Department C,5,20,18,
