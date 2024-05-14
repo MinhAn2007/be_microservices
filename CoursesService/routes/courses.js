@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Semester = require("../models/semester");
 const Course = require("../models/course");
+const Enrollment = require("../models/enrollment");
 // Registration route
 router.get(
   "/:semesterName/departments/:department/courses",
@@ -97,6 +98,63 @@ router.get("/classes/:courseId", async (req, res) => {
     res.json(classes);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+router.get("/classes/:userId/:semester", async (req, res) => {
+  try {
+    const { userId, semester } = req.params;
+
+    // Tìm tất cả các bản ghi Enrollment của sinh viên với semester cụ thể
+    const enrollments = await Enrollment.find({ userId, semester });
+
+    // Trích xuất danh sách các courseIds từ các bản ghi Enrollment
+    const enrolledCourses = enrollments.map(
+      (enrollment) => enrollment.enrolledCourses
+    );
+
+    res.json({ enrolledCourses });
+  } catch (error) {
+    console.error("Error fetching enrolled courses:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+router.get('/enrolled/:userId/:semester', async (req, res) => {
+  try {
+    const { userId, semester } = req.params;
+
+    // Find enrollments matching the provided user ID and semester
+    const enrollments = await Enrollment.find({ userId, semester });
+
+    // Initialize an array to store enrolled courses and classes
+    let enrolledCoursesAndClasses = [];
+
+    // Iterate through each enrollment
+    for (const enrollment of enrollments) {
+      // Extract enrolled courses and classes from each enrollment
+      const { enrolledCourses } = enrollment;
+
+      // Iterate through each enrolled course
+      for (const course of enrolledCourses) {
+        // Find the course details using courseId
+        const enrolledCourse = await Course.findOne({ course_id: course.courseId });
+
+        // If the enrolled course is found, add it to the result array
+        if (enrolledCourse) {
+          // Extract the class details using classId from the enrolled course
+          const enrolledClass = enrolledCourse.classes.find(cls => cls.class_id === course.classId);
+          enrolledCoursesAndClasses.push({
+            course: enrolledCourse,
+            class: enrolledClass
+          });
+        }
+      }
+    }
+
+    // Return the enrolled courses and classes
+    res.json(enrolledCoursesAndClasses);
+  } catch (error) {
+    console.error('Error fetching enrolled courses and classes:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 module.exports = router;
