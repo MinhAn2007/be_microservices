@@ -14,7 +14,7 @@ try {
   });
   app.use('/student', require('./routes/student.js'));
 
-  const PORT = 3010;
+  const PORT = 3020;
   const HOST = '0.0.0.0'; // Listen on all network interfaces
   app.listen(PORT, HOST, () => {
     console.log(`Server is running on http://${HOST}:${PORT}`);
