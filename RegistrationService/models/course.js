@@ -1,15 +1,25 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const courseSchema = new mongoose.Schema({
+  course_id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   department: { type: String, required: true },
   credits: { type: Number, required: true },
-  prerequisites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }], // Array of prerequisite courses
-  maxCapacity: { type: Number, required: true }, // Maximum capacity for the course
-  enrolledStudents: { type: Number, default: 0 }, // Number of students currently enrolled
-  isOpen: { type: Boolean, default: false }, // Flag to indicate whether the course is open or closed
+  max_students: { type: Number, required: true },
+  is_chosen: { type: Boolean, required: true },
+  prerequisites: { type: Array, required: true },
+  classes: [
+    {
+      class_id: { type: String, required: true },
+      schedule: { type: String, required: true },
+      instructor: { type: String, required: true },
+      current_students: { type: Number, required: true },
+      schedule_theory: { type: String, required: true },
+      schedule_lab: { type: String, required: true },
+    },
+  ],
 });
 
-const Course = mongoose.model('Course', courseSchema);
+const Course = mongoose.model("Course", courseSchema);
 
 module.exports = Course;

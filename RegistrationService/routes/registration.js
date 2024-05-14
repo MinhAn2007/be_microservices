@@ -1,3 +1,4 @@
+// routes/courses.js
 const express = require("express");
 const router = express.Router();
 const Course = require("../models/course.js");
@@ -6,12 +7,13 @@ const UserCourse = require("../models/usercourse.js");
 
 // Registration route
 router.post("/register", async (req, res) => {
-  const { userId, courseId } = req.body;
+  const { userId, courseId, classId } = req.body;
 
   try {
     // Check if the course exists
-    const course = await Course.findById(courseId);
+    const course = await Course.findOne({ course_id: courseId });
     console.log("Course:", course);
+    
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
@@ -23,40 +25,59 @@ router.post("/register", async (req, res) => {
     }
 
     // Find prerequisite courses
-    const prerequisiteCourses = await Course.find({ _id: { $in: course.prerequisites } });
-
-    // Find user's enrolled courses
+    const prerequisiteCourses = course.prerequisites;
     const userCourses = await UserCourse.find({ userId: userId });
-
-    // Log values for debugging
+    console.log("User Courses:", prerequisiteCourses);
+    // Check if prerequisiteCourses is defined and iterable
+    if (!prerequisiteCourses || !Symbol.iterator in Object(prerequisiteCourses)) {
+        console.log("Prerequisite Courses: ", prerequisiteCourses);
+        console.log("Prerequisite Courses are not defined or not iterable. Comparing directly with userCourses.");
+        // Compare prerequisiteCourses directly with userCourses
+        if (!userCourses.some(userCourse => userCourse.courseId && userCourse.courseId === prerequisiteCourses)) {
+            console.log(`User has not completed prerequisite course: ${prerequisiteCourses}`);
+            return res.status(400).json({ message: `User has not completed prerequisite course: ${prerequisiteCourses}` });
+        }
+    }
+    
     console.log("Prerequisite Courses:", prerequisiteCourses);
+    
+    // Find user's enrolled courses
+    
+    // Log values for debugging
     console.log("User Courses:", userCourses);
-
+    
     // Check if user has completed prerequisite courses
     for (const prerequisiteCourse of prerequisiteCourses) {
-      if (!userCourses.some(userCourse => userCourse.courseId && userCourse.courseId.toString() === prerequisiteCourse._id.toString())) {
-      console.log(`User has not completed prerequisite course: ${prerequisiteCourse.name}`);
-      return res.status(400).json({ message: `User has not completed prerequisite course: ${prerequisiteCourse.name}` });
-      }
+        console.log("Prerequisite Course check:", prerequisiteCourse);
+        if (!userCourses.some(userCourse => userCourse.courseId && userCourse.courseId === prerequisiteCourse)) {
+            console.log(`User has not completed prerequisite course: ${prerequisiteCourse}`);
+            return res.status(400).json({ message: `User has not completed prerequisite course: ${prerequisiteCourse}` });
+        }
+    }
+    
+    // Check maximum capacity
+    const classInfo = course.classes.find(cls => cls.class_id === classId);
+    if (!classInfo) {
+        return res.status(404).json({ message: "Class not found" });
     }
 
-    // Check maximum capacity
-    if (course.enrolledStudents >= course.maxCapacity) {
-      return res.status(400).json({ message: "Course registration is full" });
+    if (classInfo.current_students >= classInfo.max_capacity) {
+        return res.status(400).json({ message: "Class registration is full" });
     }
 
     // Create enrollment
     const enrollment = new Enrollment({
-      userId: userId,
-      courseId: courseId,
-      status: "registered"
+        userId: userId,
+        courseId: courseId,
+        classId: classId,
+        status: "registered"
     });
 
     // Save enrollment
     await enrollment.save();
 
-    // Update enrolledStudents count
-    course.enrolledStudents++;
+    // Update current_students count
+    classInfo.current_students++;
     await course.save();
 
     res.status(201).json({ message: "Registration successful", enrollment });

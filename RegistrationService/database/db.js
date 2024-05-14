@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 module.exports = async function connect() {
   try {
-    await mongoose.connect(process.env.MONGO_URL, {
+    await mongoose.connect('mongodb+srv://20040301an:xM7l1AZkM4vPvwz9@cluster0.phkaqlp.mongodb.net/register', {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
