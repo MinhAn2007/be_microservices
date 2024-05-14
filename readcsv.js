@@ -5,8 +5,8 @@ connect();
 const studentData = {
   userId: "20040301",
   enrolledCourses: [
-    { courseId: "MECH101", classId: "MECH101-01" },
-    { courseId: "MECH201", classId: "MECH201-02" }
+    { courseId: "CSE101", classId: "CSE101-01" },
+    { courseId: "CSE201", classId: "CSE201-02" }
     // Add more enrolled courses if needed
   ],
   status: "registered",
