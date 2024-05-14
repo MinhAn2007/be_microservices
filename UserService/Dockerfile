@@ -15,7 +15,7 @@ COPY . .
 
 
 # Expose port 3000 to the outside world
-EXPOSE 3005
+EXPOSE 3020
 
 # Command to run the application
 CMD ["node", "index.js"]
