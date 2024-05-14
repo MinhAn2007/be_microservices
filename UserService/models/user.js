@@ -51,7 +51,8 @@ const studentSchema = new mongoose.Schema({
       details: { type: String },
       date: { type: Date, default: Date.now }
     }
-  ]
+  ],
+  can_use_info: { type: Boolean, default: false }
 });
 
 const Student = mongoose.model("Student", studentSchema);
