@@ -5,7 +5,7 @@ const Student = require("../models/user");
 // Get student's general information
 router.get("/:code", async (req, res) => {
   try {
-    const student = await Student.findOne({ code: { $in: [req.params.id] } });
+    const student = await Student.findOne({ code: req.params.code });
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
