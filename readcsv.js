@@ -1,117 +1,79 @@
-const mongoose = require('mongoose');
-const Course = require('./CoursesService/models/course');
-const Semester = require('./CoursesService/models/semester');
-
-// Kết nối đến cơ sở dữ liệu MongoDB
-const connect = require('./CoursesService/database/db.js');
+const Student = require("./UserService/models/user");
+const connect = require('./UserService/database/db.js');
 connect();
-
-// Dữ liệu mẫu cho các khóa học
-const coursesData = [
+// Sample students data
+const sampleStudents = [
   {
-    course_id: 'CSE101',
-    name: 'Introduction to Computer Science',
-    department: 'Computer Science',
-    credits: 3,
-    max_students: 50,
-    is_chosen: true,
-    prerequisites: [],
-    classes: [
-      {
-        class_id: 'CSE101-01',
-        schedule: 'Mon/Wed/Fri 9:00-10:30 AM',
-        instructor: 'Dr. Smith',
-        current_students: 30,
-        schedule_theory: 'Mon/Wed 9:00-10:30 AM',
-        schedule_lab: 'Thu 1:00-4:00 PM'
-      },
-      {
-        class_id: 'CSE101-02',
-        schedule: 'Tue/Thu 1:00-2:30 PM',
-        instructor: 'Prof. Johnson',
-        current_students: 25,
-        schedule_theory: 'Tue/Thu 1:00-2:30 PM',
-        schedule_lab: 'Fri 9:00 AM-12:00 PM'
-      }
+    role: "student",
+    student_id: "1",
+    full_name: "John Doe",
+    date_of_birth: new Date("1995-01-01"),
+    gender: "Male",
+    address: "123 Main St, City",
+    phone: "123-456-7890",
+    email: "john@example.com",
+    major: "Computer Science",
+    faculty: "Engineering",
+    credits_registered: 15,
+    credits_earned: 12,
+    gpa: 3.5,
+    courses: [
+      { course_id: "CSCI101", course_name: "Introduction to Computer Science", credits: 3, grade: "A" },
+      { course_id: "CSCI102", course_name: "Data Structures", credits: 4, grade: "B" },
+      { course_id: "CSCI201", course_name: "Algorithms", credits: 4, grade: "A" },
+      { course_id: "CSCI301", course_name: "Database Systems", credits: 3, grade: "A" },
+      { course_id: "CSCI401", course_name: "Software Engineering", credits: 4, grade: "B+" }
     ]
   },
   {
-    course_id: 'CSE102',
-    name: 'Data Structures',
-    department: 'Computer Science',
-    credits: 4,
-    max_students: 40,
-    is_chosen: true,
-    prerequisites: ['CSE101'],
-    classes: [
-      {
-        class_id: 'CSE102-01',
-        schedule: 'Tue/Thu 10:00-11:30 AM',
-        instructor: 'Prof. Johnson',
-        current_students: 25,
-        schedule_theory: 'Tue/Thu 10:00-11:30 AM',
-        schedule_lab: 'Wed 1:00-4:00 PM'
-      },
-      {
-        class_id: 'CSE102-02',
-        schedule: 'Mon/Wed/Fri 1:00-2:30 PM',
-        instructor: 'Prof. Johnson',
-        current_students: 20,
-        schedule_theory: 'Mon/Wed 1:00-2:30 PM',
-        schedule_lab: 'Thu 9:00 AM-12:00 PM'
-      },
+    role: "student",
+    student_id: "2",
+    full_name: "Jane Smith",
+    date_of_birth: new Date("1997-05-15"),
+    gender: "Female",
+    address: "456 Oak St, Town",
+    phone: "987-654-3210",
+    email: "jane@example.com",
+    major: "Electrical Engineering",
+    faculty: "Engineering",
+    credits_registered: 18,
+    credits_earned: 15,
+    gpa: 3.8,
+    courses: [
+      { course_id: "EE101", course_name: "Circuit Analysis", credits: 3, grade: "A" },
+      { course_id: "EE201", course_name: "Electromagnetics", credits: 4, grade: "A-" },
+      { course_id: "EE301", course_name: "Power Systems", credits: 4, grade: "B+" },
+      { course_id: "EE401", course_name: "Control Systems", credits: 3, grade: "A" },
+      { course_id: "EE402", course_name: "Digital Signal Processing", credits: 4, grade: "A" }
     ]
   },
   {
-    course_id: 'CSE103',
-    name: 'Introduction to Programming',
-    department: 'Computer Science',
-    credits: 3,
-    max_students: 40,
-    is_chosen: true,
-    prerequisites: [],
-    classes: [
-      {
-        class_id: 'CSE103-01',
-        schedule: 'Mon/Wed/Fri 9:00-10:30 AM',
-        instructor: 'Dr. Smith',
-        current_students: 30,
-        schedule_theory: 'Mon/Wed 9:00-10:30 AM',
-        schedule_lab: 'Thu 1:00-4:00 PM'
-      },
-      {
-        class_id: 'CSE103-02',
-        schedule: 'Tue/Thu 1:00-2:30 PM',
-        instructor: 'Prof. Johnson',
-        current_students: 25,
-        schedule_theory: 'Tue/Thu 1:00-2:30 PM',
-        schedule_lab: 'Fri 9:00 AM-12:00 PM'
-      }
+    role: "student",
+    student_id: "3",
+    full_name: "Michael Johnson",
+    date_of_birth: new Date("1998-09-20"),
+    gender: "Male",
+    address: "789 Elm St, Village",
+    phone: "555-555-5555",
+    email: "michael@example.com",
+    major: "Physics",
+    faculty: "Science",
+    credits_registered: 12,
+    credits_earned: 9,
+    gpa: 3.2,
+    courses: [
+      { course_id: "PHYS101", course_name: "Introduction to Physics", credits: 3, grade: "B" },
+      { course_id: "PHYS201", course_name: "Classical Mechanics", credits: 4, grade: "B+" },
+      { course_id: "PHYS301", course_name: "Quantum Mechanics", credits: 4, grade: "C" },
+      { course_id: "PHYS401", course_name: "Electrodynamics", credits: 3, grade: "B" },
+      { course_id: "PHYS402", course_name: "Statistical Mechanics", credits: 4, grade: "A-" }
     ]
   }
 ];
-
-// Insert courses data and create semester data
-const insertData = async () => {
-  try {
-    // Insert courses
-
-    // Prepare semester data
-    const semesterData = {
-      semester_name: 'Spring 2024',
-      courses: coursesData.map(course => ({
-        course_id: course._id,
-        department: course.department
-      }))
-    };
-
-    // Insert semester
-    const semester = new Semester(semesterData);
-    const result = await semester.save();
-    console.log('Semester data inserted successfully:', result);
-  } catch (err) {
-    console.error('Error inserting data:', err);
-  }
-};
-
-insertData();
+Student.insertMany(sampleStudents)
+      .then((result) => {
+        console.log('Data inserted successfully:', result);
+      })
+      .catch((err) => {
+        console.error('Error inserting data:', err);
+      });
