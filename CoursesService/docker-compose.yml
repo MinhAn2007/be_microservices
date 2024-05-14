@@ -1,6 +1,6 @@
 version: '3'
 services:
-    login-service:
+    courses-service:
         build:
             context: .
             dockerfile: Dockerfile
