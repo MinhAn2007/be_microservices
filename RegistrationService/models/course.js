@@ -16,6 +16,9 @@ const courseSchema = new mongoose.Schema({
       current_students: { type: Number, required: true },
       schedule_theory: { type: String, required: true },
       schedule_lab: { type: String, required: true },
+      is_blocked: { type: Boolean, required: true },
+      semester_id: { type: mongoose.Schema.Types.ObjectId, required: true } // Add this field
+
     },
   ],
 });
