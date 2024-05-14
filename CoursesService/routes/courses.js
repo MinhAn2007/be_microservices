@@ -4,42 +4,49 @@ const router = express.Router();
 const Semester = require("../models/semester");
 const Course = require("../models/course");
 // Registration route
-router.get("/:semesterName/departments/:department/courses", async (req, res) => {
-  try {
-    const { semesterName, department } = req.params;
-    console.log("semesterName", semesterName);
-    console.log("department", department);
-    const semester = await Semester.findOne({ semester_name: semesterName }).populate({
-      path: 'courses.course_id',
-      match: { department: department },
-    });
-    console.log("semester", semester);
-    if (!semester) {
-      return res.status(404).json({ message: 'Semester not found' });
-    }
-    const filteredCourses = semester.courses.filter(course => course.department === department);
+router.get(
+  "/:semesterName/departments/:department/courses",
+  async (req, res) => {
+    try {
+      const { semesterName, department } = req.params;
+      console.log("semesterName", semesterName);
+      console.log("department", department);
+      const semester = await Semester.findOne({
+        semester_name: semesterName,
+      }).populate({
+        path: "courses.course_id",
+        match: { department: department },
+      });
+      console.log("semester", semester);
+      if (!semester) {
+        return res.status(404).json({ message: "Semester not found" });
+      }
+      const filteredCourses = semester.courses.filter(
+        (course) => course.department === department
+      );
 
-    const courseIds = filteredCourses.map(course => course._id);
-    const courses = await Course.find({ _id: { $in: courseIds } });
-    console.log("courseIds", courseIds);
-    console.log("courses", courses);
-    res.json(courses);
-  } catch (error) {
-    console.error('Error fetching courses:', error);
-    res.status(500).json({ message: 'Server error', error });
+      const courseIds = filteredCourses.map((course) => course._id);
+      const courses = await Course.find({ _id: { $in: courseIds } });
+      console.log("courseIds", courseIds);
+      console.log("courses", courses);
+      res.json(courses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
   }
-});
+);
 router.get("/departments/:department", async (req, res) => {
   try {
     const { department } = req.params;
-    
+
     // Find all courses for the specified department
     const courses = await Course.find({ department });
 
     res.json(courses);
   } catch (error) {
-    console.error('Error fetching courses by department:', error);
-    res.status(500).json({ message: 'Server error', error });
+    console.error("Error fetching courses by department:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 });
 
@@ -50,13 +57,12 @@ router.post("/:courseId/classes", async (req, res) => {
 
     const course = await Course.findOne({ course_id: courseId });
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
     console.log("course", course);
     console.log("newClasses", newClasses);
     // Add semester ID to each new class
 
-    
     // Initialize course.classes if it's undefined
     if (!course.classes) {
       course.classes = [];
@@ -70,9 +76,27 @@ router.post("/:courseId/classes", async (req, res) => {
 
     res.json(course);
   } catch (error) {
-    console.error('Error adding classes to course:', error);
-    res.status(500).json({ message: 'Server error', error });
+    console.error("Error adding classes to course:", error);
+    res.status(500).json({ message: "Server error", error });
   }
 });
+router.get("/classes/:courseId", async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const course = await Course.findOne({ course_id: courseId }).exec();
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+    const maxStudents = course.max_students;
 
+    // Lấy danh sách các lớp học
+    const classes = course.classes.map((classItem) => ({
+      ...classItem.toObject(), // Convert Mongoose document to plain JavaScript object
+      max_students: maxStudents, // Gắn max_students vào mỗi lớp học
+    }));
+    res.json(classes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;
