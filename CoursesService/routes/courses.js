@@ -25,7 +25,7 @@ router.get(
       const filteredCourses = semester.courses.filter(
         (course) => course.department === department
       );
-
+      console.log("filteredCourses", filteredCourses);
       const courseIds = filteredCourses.map((course) => course._id);
       const courses = await Course.find({ _id: { $in: courseIds } });
       console.log("courseIds", courseIds);
