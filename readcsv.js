@@ -1,158 +1,118 @@
-const connect = require("./CoursesService/database/db.js");
-const Course = require("./CoursesService/models/course.js");
+const connect = require("./UserService/database/db.js");
+const User = require("./UserService/models/user.js");
 connect();
 
-// Sample data for courses
-const coursesData = [
-  {
-    course_id: "CSE101",
-    name: "Introduction to Computer Science",
-    department: "CSE",
-    credits: 3,
-    max_students: 50,
-    is_chosen: true,
-    prerequisites: [],
-    classes: [
-      {
-        class_id: "CSE101-01",
-        schedule: "Monday, Wednesday, Friday 10:00 AM - 11:30 AM",
-        instructor: "Dr. John Doe",
-        current_students: 0,
-        schedule_theory: "MW 10:00 AM - 11:00 AM",
-        schedule_lab: "F 10:00 AM - 11:30 AM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE101-02",
-        schedule: "Tuesday, Thursday 9:00 AM - 10:30 AM",
-        instructor: "Dr. Jane Smith",
-        current_students: 0,
-        schedule_theory: "TT 9:00 AM - 10:00 AM",
-        schedule_lab: "T 10:00 AM - 11:30 AM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE101-03",
-        schedule: "Tuesday, Thursday 1:00 PM - 2:30 PM",
-        instructor: "Prof. Michael Johnson",
-        current_students: 0,
-        schedule_theory: "TT 1:00 PM - 2:00 PM",
-        schedule_lab: "T 2:00 PM - 3:30 PM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-    ],
-  },
-  // Add more courses if needed
-  {
-    course_id: "CSE102",
-    name: "Data Structures and Algorithms",
-    department: "CSE",
-    credits: 3,
-    max_students: 50,
-    is_chosen: true,
-    prerequisites: ["CSE101"],
-    classes: [
-      {
-        class_id: "CSE102-01",
-        schedule: "Monday, Wednesday, Friday 10:00 AM - 11:30 AM",
-        instructor: "Dr. Sarah Williams",
-        current_students: 0,
-        schedule_theory: "MW 10:00 AM - 11:00 AM",
-        schedule_lab: "F 10:00 AM - 11:30 AM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE102-02",
-        schedule: "Tuesday, Thursday 9:00 AM - 10:30 AM",
-        instructor: "Prof. James Brown",
-        current_students: 0,
-        schedule_theory: "TT 9:00 AM - 10:00 AM",
-        schedule_lab: "T 10:00 AM - 11:30 AM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE102-03",
-        schedule: "Tuesday, Thursday 1:00 PM - 2:30 PM",
-        instructor: "Dr. Emily Davis",
-        current_students: 0,
-        schedule_theory: "TT 1:00 PM - 2:00 PM",
-        schedule_lab: "T 2:00 PM - 3:30 PM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-    ],
-  },
-  {
-    course_id: "CSE103",
-    name: "Object-Oriented Programming",
-    department: "CSE",
-    credits: 3,
-    max_students: 50,
-    is_chosen: true,
-    prerequisites: ["CSE101"],
-    classes: [
-      {
-        class_id: "CSE103-01",
-        schedule: "Monday, Wednesday, Friday 8:00 AM - 9:30 AM",
-        instructor: "Prof. John Smith",
-        current_students: 0,
-        schedule_theory: "MWF 8:00 AM - 9:00 AM",
-        schedule_lab: "F 9:00 AM - 10:30 AM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE103-02",
-        schedule: "Tuesday, Thursday 2:00 PM - 3:30 PM",
-        instructor: "Dr. Jessica Johnson",
-        current_students: 0,
-        schedule_theory: "TT 2:00 PM - 3:00 PM",
-        schedule_lab: "T 3:00 PM - 4:30 PM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-      {
-        class_id: "CSE103-03",
-        schedule: "Tuesday, Thursday 10:00 AM - 11:30 AM",
-        instructor: "Prof. Michael Brown",
-        current_students: 0,
-        schedule_theory: "TT 10:00 AM - 11:00 AM",
-        schedule_lab: "T 11:00 AM - 12:30 PM",
-        is_blocked: false,
-        start_date: new Date(),
-        end_date: new Date(),
-        semester_id: "Spring 2024", // Semester ID
-      },
-    ],
-  },
-];
+const currentStudentData = {
+  student_id: "123456",
+  code: "S001",
+  full_name: "Nguyễn Văn A",
+  date_of_birth: new Date("2000-01-01"),
+  gender: "Male",
+  address: "123 Đường ABC, Quận XYZ, Thành phố HCM",
+  phone: "0123456789",
+  email: "nguyenvana@example.com",
+  avatar: "avatar.jpg",
+  major: "Computer Science",
+  faculty: "Faculty of Information Technology",
+  registrations: [
+    {
+      semester: "Spring 2024",
+      registered_credits: 12,
+    },
+  ],
+  credits_earned: 30,
+  gpa: 3.5,
+  courses: [
+    {
+      course_id: "CSE101",
+      course_name: "Introduction to Computer Science",
+      credits: 3,
+      grade: "A",
+    },
+    // Thêm các khóa học khác nếu cần
+  ],
+};
 
-// Insert courses data into the database
-Course.insertMany(coursesData)
-  .then((result) => {
-    console.log("Courses inserted successfully:", result);
-  })
-  .catch((err) => {
-    console.error("Error inserting courses data:", err);
-  });
+// Dữ liệu mẫu cho sinh viên đã tốt nghiệp
+const graduatedStudentData = {
+  student_id: "789012",
+  code: "S002",
+  full_name: "Trần Thị B",
+  date_of_birth: new Date("2000-02-02"),
+  gender: "Female",
+  address: "456 Đường XYZ, Quận ABC, Thành phố HCM",
+  phone: "0987654321",
+  email: "tranthib@example.com",
+  avatar: "avatar.jpg",
+  major: "Information Technology",
+  faculty: "Faculty of Computer Science",
+  registrations: [],
+  credits_earned: 120,
+  gpa: 3.8,
+  courses: [
+    {
+      course_id: "CSE101",
+      course_name: "Introduction to Computer Science",
+      credits: 3,
+      grade: "A",
+    },
+    // Thêm các khóa học khác nếu cần
+  ],
+  graduated: true,
+  graduation_date: new Date("2024-05-30"),
+  degree_info: {
+    degree_title: "Bachelor of Science",
+    graduation_status: "Completed",
+    completed_courses: [
+      {
+        course_id: "CSE101",
+        course_name: "Introduction to Computer Science",
+        credits: 3,
+        grade: "A",
+      },
+      // Thêm các khóa học đã hoàn thành khác nếu cần
+    ],
+  },
+  post_graduation_activities: [
+    {
+      activity_type: "Employment",
+      details: "Software Engineer at Example Company",
+      date: new Date("2024-06-01"),
+    },
+    // Thêm các hoạt động sau tốt nghiệp khác nếu cần
+  ],
+};
+
+// Dữ liệu mẫu cho admin
+const adminData = {
+  code: "12345678",
+  student_id: "12345678",
+  full_name: "Admin", // Giá trị rỗng cho trường full_name
+  date_of_birth: null, // Giá trị mặc định cho trường date_of_birth
+  gender: " ", // Giá trị rỗng cho trường gender
+  address: " ", // Giá trị rỗng cho trường address
+  phone: " ", // Giá trị rỗng cho trường phone
+  email: " ", // Giá trị rỗng cho trường email
+  avatar: null, // Giá trị mặc định cho trường avatar
+  major: " ", // Giá trị rỗng cho trường major
+  faculty: " ", // Giá trị rỗng cho trường faculty
+  registrations: [], // Mảng rỗng cho trường registrations
+  credits_earned: 0, // Giá trị mặc định cho trường credits_earned
+  gpa: 0, // Giá trị mặc định cho trường gpa
+  courses: [], // Mảng rỗng cho trường courses
+  registration: [], // Mảng rỗng cho trường registration
+  graduated: false, // Giá trị mặc định cho trường graduated
+  graduation_date: null, // Giá trị mặc định cho trường graduation_date
+  degree_info: {
+    degree_title: " ", // Giá trị rỗng cho trường degree_title
+    graduation_status: " ", // Giá trị rỗng cho trường graduation_status
+    completed_courses: [], // Mảng rỗng cho trường completed_courses
+  },
+  post_graduation_activities: [], // Mảng rỗng cho trường post_graduation_activities
+  can_use_info: false, // Giá trị mặc định cho trường can_use_info
+};
+
+User.create(adminData).then((student) => {
+  console.log("Current student created:", student);
+});
+

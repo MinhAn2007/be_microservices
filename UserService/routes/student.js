@@ -76,5 +76,40 @@ router.put("/student/:id/post_graduation_activities", async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+router.put("/:code/registration/:semester", async (req, res) => {
+  try {
+    const { registeredCredits } = req.body;
+    const { code, semester } = req.params;
+
+    // Find the user by code
+    const user = await Student.findOne({ code });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find the registration for the specified semester
+    const registration = user.registrations.find(
+      (reg) => reg.semester === semester
+    );
+    if (!registration) {
+      return res
+        .status(404)
+        .json({ message: "Registration for the semester not found" });
+    }
+
+    // Update the registered credits for the semester
+    registration.registered_credits = registeredCredits;
+
+    // Save the updated user
+    const updatedUser = await user.save();
+
+    // Return the updated user data
+    res.json(updatedUser);
+  } catch (error) {
+    // Handle errors
+    console.error("Error updating registration:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
 
 module.exports = router;
