@@ -19,9 +19,12 @@ const courseSchema = new mongoose.Schema({
       is_blocked: { type: Boolean, required: true },
       semester_id: { type: String, required: true },
       start_date: { type: Date, required: true },
-      end_date: { type: Date, required: true } 
+      end_date: { type: Date, required: true } ,
     },
+
   ],
+  waitingList: [{ type: String }],
+
 });
 
 const Course = mongoose.model("Course", courseSchema);
