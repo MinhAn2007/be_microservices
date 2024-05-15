@@ -18,12 +18,10 @@ const mailSender = async (email, title, body) => {
             html: `${body}`,
         })
 
-        console.log("Info is here: ", info)
         return info
 
     } catch (error) {
         if (error.code === 'EAUTH' && error.command === 'API') {
-            console.log("Ignoring 'Missing credentials for 'PLAIN'' error.");
         } else {
             console.log(error.message);
         }

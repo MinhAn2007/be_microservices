@@ -87,7 +87,10 @@ router.post("/register", async (req, res) => {
     // Update current_students count
     classInfo.current_students++;
     await course.save();
-    await sendVerificationEmail(email, `Bạn đã đăng kí học phần ${coursesId} thành công`)
+    await sendVerificationEmail(
+      email,
+      `Bạn đã đăng kí học phần ${coursesId} thành công`
+    );
     res.status(201).json({ message: "Registration successful", enrollment });
   } catch (error) {
     console.error("Error occurred during registration:", error);
@@ -100,6 +103,7 @@ router.post("/unregister", async (req, res) => {
   console.log("userId:", userId);
   console.log("courseId:", courseId);
   console.log("classId:", classId);
+  console.log("email:", email);
   try {
     // Kiểm tra xem môn học tồn tại hay không
     const course = await Course.findOne({ course_id: courseId });
@@ -111,38 +115,60 @@ router.post("/unregister", async (req, res) => {
     if (!classInfo) {
       return res.status(404).json({ message: "Class not found" });
     }
-    // Tìm và xóa đăng ký
-    const enrollment = await Enrollment.findOneAndUpdate(
-      { userId: userId },
-      {
-        $pull: {
-          enrolledCourses: {
-            courseId: courseId,
-            classId: classId,
-          },
-        },
-      },
-      { new: true }
-    );
-    // Nếu không tìm thấy đăng ký, trả về lỗi
+    const enrollment = await Enrollment.findOne({ userId: userId });
     if (!enrollment) {
       return res.status(404).json({ message: "Enrollment not found" });
     }
-    if (
-      enrollment.enrolledCourses.find(
+    console.log("Enrollment:", enrollment);
+    console.log("Enrolled courses:", enrollment.enrolledCourses);
+    console.log("Course ID:", courseId);
+    console.log("Class ID:", classId);
+
+    const waitingCourse = enrollment.enrolledCourses.find(
+      (course) =>
+        course.courseId === courseId &&
+        course.classId === classId &&
+        course.isWaiting
+    );
+    if (waitingCourse) {
+      console.log("Waiting course found:", waitingCourse);
+      await sendVerificationEmail(
+        email,
+        `Bạn đã hủy đăng kí học phần ${courseId} thành công`
+      );
+      // Remove the course from enrolledCourses
+      enrollment.enrolledCourses = enrollment.enrolledCourses.filter(
         (course) =>
-          course.courseId === courseId &&
-          course.classId === classId &&
-          course.isWaiting
-      )
-    ) {
-      return res
-        .status(200)
-        .json({ message: "Unregistration successful", enrollment });
+          !(course.courseId === courseId && course.classId === classId)
+      );
+      console.log(
+        "Enrolled courses after unregistration:",
+        enrollment.enrolledCourses
+      );
+      await enrollment.save();
+      return res.status(200).json({
+        message: "Unregistration successful",
+        enrollment,
+        waitingCourse,
+      });
     }
+    // Remove the course from enrolledCourses
+    enrollment.enrolledCourses = enrollment.enrolledCourses.filter(
+      (course) => !(course.courseId === courseId && course.classId === classId)
+    );
+    console.log(
+      "Enrolled courses after unregistration:",
+      enrollment.enrolledCourses
+    );
+    await enrollment.save();
+
+    // Giảm số lượng sinh viên hiện tại trong lớp
     classInfo.current_students--;
     await course.save();
-    await sendVerificationEmail(email, `Bạn đã hủy đăng kí học phần ${courseId} thành công`)
+    await sendVerificationEmail(
+      email,
+      `Bạn đã hủy đăng kí học phần ${courseId} thành công`
+    );
 
     res.status(200).json({ message: "Unregistration successful", enrollment });
   } catch (error) {
@@ -150,17 +176,18 @@ router.post("/unregister", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 async function sendVerificationEmail(email, content) {
-	try {
-		const mailResponse = await mailSender(
-			email,"Mail thông báo đăng kí học phân",
+  try {
+    const mailResponse = await mailSender(
+      email,
+      "Mail thông báo đăng kí học phân",
       `<H1>Thông báo đăng kí học phần</H1>
       <p>${content}</p>`
-			
-		);
-		console.log("Email sent successfully: ", mailResponse);
-	} catch (error) {
-		console.log("Error occurred while sending email: ", error);
-		throw error;
-	}}
+    );
+  } catch (error) {
+    console.log("Error occurred while sending email: ", error);
+    throw error;
+  }
+}
 module.exports = router;
