@@ -22,6 +22,12 @@ router.get(
       if (!semester) {
         return res.status(404).json({ message: "Semester not found" });
       }
+      console.log("semester status", semester.status);
+      if (semester.status !== "open") {
+        return res
+          .status(403)
+          .json({ message: "Bạn không được đăng kí trong kì này" });
+      }
       const filteredCourses = semester.courses.filter(
         (course) => course.department === department
       );
@@ -118,7 +124,7 @@ router.get("/classes/:userId/:semester", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
-router.get('/enrolled/:userId/:semester', async (req, res) => {
+router.get("/enrolled/:userId/:semester", async (req, res) => {
   try {
     const { userId, semester } = req.params;
 
@@ -136,15 +142,19 @@ router.get('/enrolled/:userId/:semester', async (req, res) => {
       // Iterate through each enrolled course
       for (const course of enrolledCourses) {
         // Find the course details using courseId
-        const enrolledCourse = await Course.findOne({ course_id: course.courseId });
+        const enrolledCourse = await Course.findOne({
+          course_id: course.courseId,
+        });
 
         // If the enrolled course is found, add it to the result array
         if (enrolledCourse) {
           // Extract the class details using classId from the enrolled course
-          const enrolledClass = enrolledCourse.classes.find(cls => cls.class_id === course.classId);
+          const enrolledClass = enrolledCourse.classes.find(
+            (cls) => cls.class_id === course.classId
+          );
           enrolledCoursesAndClasses.push({
             course: enrolledCourse,
-            class: enrolledClass
+            class: enrolledClass,
           });
         }
       }
@@ -153,8 +163,8 @@ router.get('/enrolled/:userId/:semester', async (req, res) => {
     // Return the enrolled courses and classes
     res.json(enrolledCoursesAndClasses);
   } catch (error) {
-    console.error('Error fetching enrolled courses and classes:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching enrolled courses and classes:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 module.exports = router;

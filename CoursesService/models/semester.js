@@ -7,7 +7,8 @@ const semesterSchema = new mongoose.Schema({
       course_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }, // Tham chiếu tới môn học
       department: { type: String, required: true }, // Khoa của môn học
     }
-  ]
+  ],
+  status : { type: String, enum: ['open', 'close'], default: 'close' }, 
 });
 
 const Semester = mongoose.model('Semester', semesterSchema);

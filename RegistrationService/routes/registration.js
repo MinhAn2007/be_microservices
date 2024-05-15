@@ -19,26 +19,18 @@ router.post("/register", async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
-
-    // Check if the user is already enrolled in this course
-    const existingEnrollment = await Enrollment.findOne({
-      userId: userId,
-      courseId: coursesId,
-    });
-    if (existingEnrollment) {
-      return res
-        .status(400)
-        .json({ message: "User is already enrolled in this course" });
-    }
-    // Check maximum capacity
     const classInfo = course.classes.find((cls) => cls.class_id === classId);
     if (!classInfo) {
       return res.status(404).json({ message: "Class not found" });
     }
-
-    if (classInfo.current_students >= classInfo.max_capacity) {
-      return res.status(400).json({ message: "Class registration is full" });
+    if (classInfo.current_students >= course.max_students) {
+      return res.status(400).json({ message: "Class is full" });
     }
+
+     const existingEnrollment = await Enrollment.findOne({
+      userId: userId,
+      courseId: coursesId,
+    });
 
     const enrollment = await Enrollment.findOneAndUpdate(
       { userId: userId },
