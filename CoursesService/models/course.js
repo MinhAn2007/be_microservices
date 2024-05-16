@@ -22,7 +22,6 @@ const courseSchema = new mongoose.Schema({
       end_date: { type: Date, required: true },
     },
   ],
-  waitingList: [{ type: String }],
 });
 
 const Course = mongoose.model("Course", courseSchema);

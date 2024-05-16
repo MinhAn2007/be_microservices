@@ -1,19 +1,28 @@
-// routes/courses.js
 const express = require("express");
 const router = express.Router();
 const Course = require("../models/course.js");
 const Enrollment = require("../models/enrollment.js");
 const mailSender = require("../utils/mailSender.js");
+const Semester = require("../models/semester.js");
+
 // Registration route
 router.post("/register", async (req, res) => {
-  const { userId, coursesId, classId, semester, email } = req.body;
+  const {
+    userId,
+    coursesId,
+    classId,
+    semester: semesterName,
+    email,
+  } = req.body;
   console.log("Request body:", req.body);
   console.log("userId:", userId);
   console.log("courseId:", coursesId);
   console.log("classId:", classId);
-  console.log("semester:", semester);
+  console.log("semester:", semesterName);
 
   try {
+    const semester = await Semester.findOne({ semester_name: semesterName });
+    console.log("Semester:", semester);
     const course = await Course.findOne({ course_id: coursesId });
     console.log("Course:", course);
 
@@ -24,25 +33,30 @@ router.post("/register", async (req, res) => {
     if (!classInfo) {
       return res.status(404).json({ message: "Class not found" });
     }
+    console.log("Course ID:", semester.course_id);
+    console.log("Course Input ID:", coursesId);
     if (classInfo.current_students >= course.max_students) {
-      // Thêm sinh viên vào danh sách chờ của lớp
-      course.waitingList.push(userId);
-      await course.save();
+      // Add student to the waiting list of the class
+      const filterCourse = semester.courses.find(
+        (course) => course.course_id === coursesId.toString()
+      );
+      console.log("Filter course:", filterCourse);
+      if (filterCourse) {
+        filterCourse.waitingList.push(userId);
+      }
+      await semester.save();
 
-      // Khởi tạo enrollment
-      let enrollment;
-
-      // Tìm hoặc tạo enrollment nếu chưa tồn tại
-      enrollment = await Enrollment.findOne({ userId: userId });
+      // Find or create enrollment if it doesn't exist
+      let enrollment = await Enrollment.findOne({ userId: userId });
       if (!enrollment) {
         enrollment = new Enrollment({
           userId: userId,
           enrolledCourses: [],
-          semester: semester,
+          semester: semester.semester_name,
         });
       }
 
-      // Đánh dấu sinh viên là đang ở trong danh sách chờ
+      // Mark student as being in the waiting list
       enrollment.enrolledCourses.push({
         courseId: coursesId,
         classId: classId,
@@ -79,7 +93,7 @@ router.post("/register", async (req, res) => {
             classId: classId,
           },
         ],
-        semester: semester,
+        semester: semester.semester_name,
       });
       await newEnrollment.save();
     }
@@ -97,6 +111,7 @@ router.post("/register", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 router.post("/unregister", async (req, res) => {
   const { userId, courseId, classId, email } = req.body;
   console.log("Request body:", req.body);
@@ -104,13 +119,12 @@ router.post("/unregister", async (req, res) => {
   console.log("courseId:", courseId);
   console.log("classId:", classId);
   console.log("email:", email);
+
   try {
-    // Kiểm tra xem môn học tồn tại hay không
     const course = await Course.findOne({ course_id: courseId });
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
-    // Kiểm tra xem lớp học tồn tại trong môn học hay không
     const classInfo = course.classes.find((cls) => cls.class_id === classId);
     if (!classInfo) {
       return res.status(404).json({ message: "Class not found" });
@@ -130,13 +144,28 @@ router.post("/unregister", async (req, res) => {
         course.classId === classId &&
         course.isWaiting
     );
+    const semesterDoc = await Semester.findOne({
+      semester_name: enrollment.semester,
+    });
+
+    if (semesterDoc) {
+      const filterCourse = semesterDoc.courses.find(
+        (course) => course.course_id === courseId.toString()
+      );
+      if (filterCourse) {
+        filterCourse.waitingList = filterCourse.waitingList.filter(
+          (id) => id.toString() !== userId.toString()
+        );
+        await semesterDoc.save();
+      }
+    }
+
     if (waitingCourse) {
       console.log("Waiting course found:", waitingCourse);
       await sendVerificationEmail(
         email,
         `Bạn đã hủy đăng kí học phần ${courseId} thành công`
       );
-      // Remove the course from enrolledCourses
       enrollment.enrolledCourses = enrollment.enrolledCourses.filter(
         (course) =>
           !(course.courseId === courseId && course.classId === classId)
@@ -152,7 +181,7 @@ router.post("/unregister", async (req, res) => {
         waitingCourse,
       });
     }
-    // Remove the course from enrolledCourses
+
     enrollment.enrolledCourses = enrollment.enrolledCourses.filter(
       (course) => !(course.courseId === courseId && course.classId === classId)
     );
@@ -162,7 +191,6 @@ router.post("/unregister", async (req, res) => {
     );
     await enrollment.save();
 
-    // Giảm số lượng sinh viên hiện tại trong lớp
     classInfo.current_students--;
     await course.save();
     await sendVerificationEmail(
@@ -181,7 +209,7 @@ async function sendVerificationEmail(email, content) {
   try {
     const mailResponse = await mailSender(
       email,
-      "Mail thông báo đăng kí học phân",
+      "Mail thông báo đăng kí học phần",
       `<H1>Thông báo đăng kí học phần</H1>
       <p>${content}</p>`
     );
@@ -190,4 +218,5 @@ async function sendVerificationEmail(email, content) {
     throw error;
   }
 }
+
 module.exports = router;

@@ -33,9 +33,9 @@ router.post("/:courseId/classes", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
-router.get("/classes/:courseId", async (req, res) => {
+router.get("/classes/:courseId/:semester", async (req, res) => {
   try {
-    const { courseId } = req.params;
+    const { courseId, semester } = req.params;
     const course = await Course.findOne({ course_id: courseId }).exec();
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
@@ -43,11 +43,19 @@ router.get("/classes/:courseId", async (req, res) => {
     const maxStudents = course.max_students;
 
     // Lấy danh sách các lớp học
+    console.log("course", course);
+    console.log("course.classes", course.classes);
+    console.log("maxStudents", maxStudents);
+    console.log("semester", semester);
     const classes = course.classes.map((classItem) => ({
-      ...classItem.toObject(), // Convert Mongoose document to plain JavaScript object
-      max_students: maxStudents, // Gắn max_students vào mỗi lớp học
+      ...classItem.toObject(),
+      max_students: maxStudents,
     }));
-    res.json(classes);
+    const semesterClasses = classes.filter(
+      (classItem) => classItem.semester_id === semester
+    );
+    console.log("classes", semesterClasses);
+    res.json(semesterClasses);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -114,4 +122,3 @@ router.get("/enrolled/:userId/:semester", async (req, res) => {
   }
 });
 module.exports = router;
-

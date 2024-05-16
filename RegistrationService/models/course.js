@@ -23,7 +23,6 @@ const courseSchema = new mongoose.Schema({
     },
 
   ],
-  waitingList: [{ type: String }],
 
 });
 
