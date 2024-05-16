@@ -62,6 +62,31 @@ router.post("/:courseId/class", async (req, res) => {
 
     // Cập nhật thông tin đăng ký học phần của các sinh viên
     for (const studentId of studentsToAdd.slice(0, numberOfStudentsToAdd)) {
+      const existingEnrollment = await Enrollment.findOne({
+        userId: studentId,
+        "enrolledCourses.courseId": courseId,
+        status: "registered",
+      });
+      console.log("existingEnrollment", existingEnrollment);
+      if (existingEnrollment) {
+        // Tìm lớp học chứa courseId cụ thể trong mảng enrolledCourses
+        const courseIndex = existingEnrollment.enrolledCourses.findIndex(
+          (course) => course.courseId === courseId
+        );
+
+        // Kiểm tra xem courseId có tồn tại trong mảng enrolledCourses hay không
+        if (courseIndex !== -1) {
+          // Xóa lớp học chứa courseId cụ thể ra khỏi mảng enrolledCourses
+          existingEnrollment.enrolledCourses.splice(courseIndex, 1);
+          console.log("existingEnrollment after splice", existingEnrollment);
+          // Lưu lại bản ghi Enrollment sau khi xóa
+          await existingEnrollment.save();
+
+          console.log(
+            `Cancelled enrollment for user ${studentId} in course ${courseId}`
+          );
+        }
+      }
       const enrollment = await Enrollment.findOneAndUpdate(
         { userId: studentId },
         {
