@@ -33,22 +33,43 @@ router.get("/academic/:id", async (req, res) => {
 });
 
 // Register for graduation
-router.post("/student/:id/graduate", async (req, res) => {
+router.post("/students/:id/graduate", async (req, res) => {
   try {
-    const REQUIRED_CREDITS = 120; // Example required credits for graduation
+    const { faculty } = req.body;
+    const REQUIRED_CREDITS = faculty === "Engineering" ? 150 : 120;
     const student = await Student.findById(req.params.id);
+
     if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ error: "Student not found" });
     }
-    if (student.credits_earned >= REQUIRED_CREDITS) {
-      student.graduated = true;
-      await student.save();
-      res.json({ message: "Graduation registered successfully" });
-    } else {
-      res.status(400).json({ message: "Not enough credits earned" });
+
+    if (student.credits_earned < REQUIRED_CREDITS) {
+      return res.status(400).json({
+        error: "Insufficient credits earned for graduation",
+        remaining_credits: REQUIRED_CREDITS - student.credits_earned,
+      });
     }
+
+    const graduationMonth = [0, 3, 6, 9][Math.floor(Math.random() * 4)];
+    const graduationDay = Math.floor(Math.random() * 28) + 1;
+    const graduationYear = new Date().getFullYear();
+
+    student.graduated = true;
+    student.degree_info = {
+      degree_title: "Bachelor of Science in Computer Science",
+      graduation_status: "Completed",
+    };
+    student.graduation_date = new Date(graduationYear, graduationMonth, graduationDay);
+
+    await student.save();
+
+    res.status(200).json({
+      message: "Graduation registered successfully",
+      graduation_date: student.graduation_date,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -111,5 +132,8 @@ router.put("/:code/registration/:semester", async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
+
+
 
 module.exports = router;
