@@ -192,4 +192,37 @@ router.get("/enrolled/:userId/:semester", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+router.put("/classes/:classId/block", async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const { isBlocked } = req.body;
+
+    // Tìm khóa học chứa lớp học cần cập nhật
+    const course = await Course.findOne({ "classes.class_id": classId });
+    if (!course) {
+      return res
+        .status(404)
+        .json({ message: "Course containing class not found" });
+    }
+
+    // Tìm lớp học trong danh sách các lớp của khóa học
+    const classToUpdate = course.classes.find(
+      (cls) => cls.class_id === classId
+    );
+    if (!classToUpdate) {
+      return res.status(404).json({ message: "Class not found in course" });
+    }
+
+    // Cập nhật trạng thái is_blocked của lớp học
+    classToUpdate.is_blocked = isBlocked;
+
+    // Lưu khóa học đã được cập nhật
+    await course.save();
+
+    res.json({ message: "Class is_blocked updated successfully" });
+  } catch (error) {
+    console.error("Error updating class is_blocked:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+});
 module.exports = router;
