@@ -3,36 +3,107 @@ const router = express.Router();
 const Semester = require("../models/semester");
 const Course = require("../models/course");
 const Enrollment = require("../models/enrollment");
-router.post("/:courseId/classes", async (req, res) => {
+router.post("/:courseId/class", async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { newClasses } = req.body;
+    const { newClass } = req.body;
 
     const course = await Course.findOne({ course_id: courseId });
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
-    console.log("course", course);
-    console.log("newClasses", newClasses);
-    // Add semester ID to each new class
 
-    // Initialize course.classes if it's undefined
+    console.log("course", course);
+    console.log("newClass", newClass);
+
+    // Khởi tạo course.classes nếu nó chưa được định nghĩa
     if (!course.classes) {
       course.classes = [];
     }
 
-    // Add new classes to the course
-    course.classes.push(...newClasses);
+    // Thêm lớp mới vào mảng classes của khóa học
 
-    // Save the updated course
+    // Cập nhật số lượng học sinh hiện tại của lớp mới
+    newClass.current_students = 0;
+
+    // Lấy danh sách chờ của môn học trong học kỳ
+    const semester = await Semester.findOne({
+      semester_name: newClass.semester_id,
+    });
+    if (!semester) {
+      return res.status(404).json({ message: "Semester not found" });
+    }
+
+    const courseInSemesterIndex = semester.courses.findIndex(
+      (course) => course.course_id.toString() === courseId
+    );
+
+    if (courseInSemesterIndex === -1) {
+      return res.status(404).json({ message: "Course not found in semester" });
+    }
+
+    // Lấy danh sách sinh viên từ danh sách chờ của môn học
+    const studentsToAdd = semester.courses[courseInSemesterIndex].waitingList;
+    console.log("studentsToAdd", studentsToAdd);
+    // Thêm số lượng sinh viên từ danh sách chờ vào current_students
+    const availableSeats = course.max_students - newClass.current_students;
+    console.log("availableSeats", availableSeats);
+    const numberOfStudentsToAdd = Math.min(
+      availableSeats,
+      studentsToAdd.length
+    );
+    console.log("numberOfStudentsToAdd", numberOfStudentsToAdd);
+    newClass.current_students = numberOfStudentsToAdd;
+    console.log("newClass.current_students", newClass.current_students);
+    course.classes.push(newClass);
+    semester.courses[courseInSemesterIndex].waitingList = studentsToAdd.slice(
+      numberOfStudentsToAdd
+    );
+
+    // Cập nhật thông tin đăng ký học phần của các sinh viên
+    for (const studentId of studentsToAdd.slice(0, numberOfStudentsToAdd)) {
+      const enrollment = await Enrollment.findOneAndUpdate(
+        { userId: studentId },
+        {
+          $addToSet: {
+            enrolledCourses: {
+              courseId: courseId,
+              classId: newClass.class_id,
+            },
+          },
+          $set: { semester: newClass.semester_id },
+        },
+        { upsert: true, new: true }
+      );
+
+      if (!enrollment) {
+        // Create new enrollment if it doesn't exist
+        const newEnrollment = new Enrollment({
+          userId: studentId,
+          courseId: courseId,
+          enrolledCourses: [
+            {
+              courseId: courseId,
+              classId: newClass.class_id,
+            },
+          ],
+          semester: newClass.semester_id,
+        });
+        await newEnrollment.save();
+      }
+    }
+
+    // Lưu khóa học đã được cập nhật
     await course.save();
+    await semester.save();
 
     res.json(course);
   } catch (error) {
-    console.error("Error adding classes to course:", error);
+    console.error("Error adding class to course:", error);
     res.status(500).json({ message: "Server error", error });
   }
 });
+
 router.get("/classes/:courseId/:semester", async (req, res) => {
   try {
     const { courseId, semester } = req.params;
