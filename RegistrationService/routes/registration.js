@@ -77,7 +77,7 @@ router.post("/register", async (req, res) => {
             classId: classId,
           },
         },
-        $set: { semester: semester },
+        $set: { semester: semester.semester_name },
       },
       { upsert: true, new: true }
     );
