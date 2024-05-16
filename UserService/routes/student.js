@@ -50,10 +50,9 @@ router.post("/students/:id/graduate", async (req, res) => {
       });
     }
 
-    const graduationMonth = [0, 3, 6, 9][Math.floor(Math.random() * 4)];
+    const graduationMonth = [2, 5, 8, 11][Math.floor(Math.random() * 4)];
     const graduationDay = Math.floor(Math.random() * 28) + 1;
     const graduationYear = new Date().getFullYear();
-
     student.graduated = true;
     student.degree_info = {
       degree_title: "Bachelor of Science in Computer Science",
