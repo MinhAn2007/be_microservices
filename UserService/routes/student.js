@@ -133,6 +133,17 @@ router.put("/:code/registration/:semester", async (req, res) => {
 });
 
 
+//danh sach sinh vien tot nghiep
+router.get("/manager/graduated", async (req, res) => {
+  try {
+    const graduated = await Student.find({ graduated: true });
+    res.json(graduated);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+
 
 
 module.exports = router;
