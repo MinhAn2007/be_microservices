@@ -192,6 +192,9 @@ router.post("/unregister", async (req, res) => {
     await enrollment.save();
 
     classInfo.current_students--;
+    if (classInfo.current_students < 0) {
+      classInfo.current_students = 0; // Đảm bảo số lượng sinh viên không bao giờ âm
+    }
     await course.save();
     await sendVerificationEmail(
       email,
@@ -218,5 +221,53 @@ async function sendVerificationEmail(email, content) {
     throw error;
   }
 }
+router.put("/close-semester/:semesterName", async (req, res) => {
+  const { semesterName } = req.params;
 
+  try {
+    const semester = await Semester.findOneAndUpdate(
+      { semester_name: semesterName },
+      { status: "close" },
+      { new: true }
+    );
+    console.log("Semester:", semester);
+    if (!semester) {
+      return res.status(404).send({ message: "Semester not found" });
+    }
+
+    const coursesWithWaitingList = semester.courses
+      .filter((course) => course.waitingList.length > 0)
+      .map((course) => course.course_id);
+
+    const enrollments = await Enrollment.find({
+      semester: semester.semester_name,
+    });
+    semester.courses.forEach((course) => {
+      course.waitingList = [];
+    });
+
+    await semester.save();
+    for (const enrollment of enrollments) {
+      enrollment.enrolledCourses = enrollment.enrolledCourses.filter(
+        (enrolledCourse) => {
+          return !(
+            coursesWithWaitingList.includes(enrolledCourse.courseId) &&
+            enrolledCourse.isWaiting
+          );
+        }
+      );
+      console.log("courses:", semester.courses);
+
+      await enrollment.save();
+    }
+
+    res.status(200).send({
+      message:
+        "Semester closed and waiting list courses cancelled successfully",
+    });
+  } catch (error) {
+    console.log("Error occurred while closing semester:", error);
+    res.status(500).send({ message: "Internal server error", error });
+  }
+});
 module.exports = router;
