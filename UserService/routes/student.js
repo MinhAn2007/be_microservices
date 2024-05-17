@@ -143,6 +143,20 @@ router.get("/manager/graduated", async (req, res) => {
   }
 });
 
+// cho sư dụng can_use_info = true
+router.put("/manager/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    student.can_use_info = true;
+    await student.save();
+    res.json({ message: "Can use info updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
 
 
 
