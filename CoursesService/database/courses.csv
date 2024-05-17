@@ -1,9 +1,0 @@
-course_id,name,department,credits,max_students,is_chosen,prerequisites,classes.class_id,classes.schedule,classes.instructor,classes.current_students,classes.schedule_theory,classes.schedule_lab
-CSE101,Introduction to Computer Science,Computer Science,3,50,true,None,CSE101-01,Mon/Wed/Fri 9:00-10:30 AM,Dr. Smith,30,Mon/Wed 9:00-10:30 AM,Thu 1:00-4:00 PM
-CSE101,Introduction to Computer Science,Computer Science,3,50,true,None,CSE101-02,Tue/Thu 1:00-2:30 PM,Prof. Johnson,25,Tue/Thu 1:00-2:30 PM,Fri 9:00 AM-12:00 PM
-CSE101,Introduction to Computer Science,Computer Science,3,50,true,None,CSE101-03,Mon/Wed/Fri 3:00-4:30 PM,Dr. Lee,20,Mon/Wed 3:00-4:30 PM,Thu 1:00-4:00 PM
-CSE102,Data Structures,Computer Science,4,40,true,CSE101,CSE102-01,Tue/Thu 10:00-11:30 AM,Prof. Johnson,25,Tue/Thu 10:00-11:30 AM,Wed 1:00-4:00 PM
-CSE102,Data Structures,Computer Science,4,40,true,CSE101,CSE102-02,Mon/Wed/Fri 1:00-2:30 PM,Prof. Johnson,20,Mon/Wed 1:00-2:30 PM,Thu 9:00 AM-12:00 PM
-MAT101,Calculus I,Mathematics,4,60,true,None,MAT101-01,Mon/Wed/Fri 8:00-9:30 AM,Dr. Brown,40,Mon/Wed 8:00-9:30 AM,Fri 1:00-4:00 PM
-PHY101,Physics I,Physics,4,50,true,None,PHY101-01,Tue/Thu 9:00-10:30 AM,Dr. White,35,Tue/Thu 9:00-10:30 AM,Wed 1:00-4:00 PM
-PHY101,Physics I,Physics,4,50,true,None,PHY101-02,Mon/Wed/Fri 9:00-10:30 AM,Dr. White,25,Mon/Wed 9:00-10:30 AM,Fri 1:00-4:00 PM

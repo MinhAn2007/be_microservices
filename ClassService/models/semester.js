@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const semesterSchema = new mongoose.Schema({
-  semester_name: { type: String, required: true }, // Tên của học kỳ
+  semester_name: { type: String, required: true },
   courses: [
     {
-      course_id: { type: String, ref: "Course" }, // Tham chiếu tới môn học
-      department: { type: String, required: true }, // Khoa của môn học
+      course_id: { type: String, ref: "Course" },
+      department: { type: String, required: true }, 
       waitingList: [{ type: String }],
     },
   ],
