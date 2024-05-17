@@ -42,19 +42,7 @@ router.get(
     }
   }
 );
-router.get("/departments/:department", async (req, res) => {
-  try {
-    const { department } = req.params;
 
-    // Find all courses for the specified department
-    const courses = await Course.find({ department });
-
-    res.json(courses);
-  } catch (error) {
-    console.error("Error fetching courses by department:", error);
-    res.status(500).json({ message: "Server error", error });
-  }
-});
 
 router.get("/departments", async (req, res) => {
   try {

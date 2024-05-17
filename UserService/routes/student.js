@@ -72,30 +72,7 @@ router.post("/students/:id/graduate", async (req, res) => {
   }
 });
 
-// Get alumni information
-router.get("/alumni", async (req, res) => {
-  try {
-    const alumni = await Student.find({ graduated: true });
-    res.json(alumni);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
-});
 
-// Update post-graduation activities
-router.put("/student/:id/post_graduation_activities", async (req, res) => {
-  try {
-    const student = await Student.findById(req.params.id);
-    if (!student) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-    student.post_graduation_activities.push(req.body);
-    await student.save();
-    res.json({ message: "Post-graduation activity updated successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
-});
 router.put("/:code/registration/:semester", async (req, res) => {
   try {
     const { registeredCredits } = req.body;
