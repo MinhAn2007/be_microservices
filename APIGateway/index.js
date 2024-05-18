@@ -5,35 +5,36 @@ const morgan = require("morgan");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const app = express();
 
-
-// Middleware setup
-app.use(cors()); // Enable CORS
-app.use(helmet()); // Add security headers
-app.use(morgan("combined")); // Log HTTP requests
-app.disable("x-powered-by"); // Hide Express server information
+app.use(cors());
+app.use(helmet()); 
+app.use(morgan("combined"));
+app.disable("x-powered-by");
 const services = [
+  
     {
-      route: "/auth",
-      target: "https://backend-chatapp-rdj6.onrender.com/group/getGroupList/660d1913a9f30e58990cd38f",
+      route: "/class-service",
+      target: "http://localhost:3025",
     },
     {
-      route: "/users",
-      target: "https://your-deployed-service.herokuapp.com/users/",
+      route: "/courses-service",
+      target: "http://localhost:3015",
     },
     {
-      route: "/chats",
-      target: "https://your-deployed-service.herokuapp.com/chats/",
+      route: "/login-service",
+      target: "http://localhost:3005",
     },
     {
-      route: "/payment",
-      target: "https://your-deployed-service.herokuapp.com/payment/",
+      route: "/registration-service",
+      target: "http://localhost:3010",
     },
-    // Add more services as needed either deployed or locally.
+    {
+      route: "/user-service",
+      target: "http://localhost:3020",
+    },
    ];
    const rateLimit = 20; // Max requests per minute
    const interval = 60 * 1000; // Time window in milliseconds (1 minute)
    
-   // Object to store request counts for each IP address
    const requestCounts = {};
    
    // Reset request count for each IP address every 'interval' milliseconds
