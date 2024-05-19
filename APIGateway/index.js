@@ -32,7 +32,7 @@ const services = [
       target: "http://localhost:3020",
     },
    ];
-   const rateLimit = 20; // Max requests per minute
+   const rateLimit = 1000; // Max requests per minute
    const interval = 60 * 1000; // Time window in milliseconds (1 minute)
    
    const requestCounts = {};
