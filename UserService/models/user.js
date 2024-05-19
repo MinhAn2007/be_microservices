@@ -14,6 +14,8 @@ const studentSchema = new mongoose.Schema({
   faculty: { type: String },
   academic_year: { type: String },
   english_degree: { type: Boolean, default: false },
+  education_level: { type: String },
+  education_type: { type: String },
   registrations: [
     {
       semester: { type: String, required: true },
