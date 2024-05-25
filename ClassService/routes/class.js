@@ -244,7 +244,7 @@ router.put("/classes/:classId/block", async (req, res) => {
     // Lưu khóa học đã được cập nhật
     await course.save();
 
-    res.json({ message: "Class is_blocked updated successfully" });
+    res.json({ message: "Khoá lớp thành công" });
   } catch (error) {
     console.error("Error updating class is_blocked:", error);
     res.status(500).json({ message: "Server error", error });

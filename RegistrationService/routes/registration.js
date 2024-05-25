@@ -66,7 +66,7 @@ router.post("/register", async (req, res) => {
 
       return res
         .status(400)
-        .json({ message: "Class is full, student added to waiting list" });
+        .json({ message: "Tất cả các lớp đã đầy, bạn đã được thêm vào danh sách chờ" });
     }
     const enrollment = await Enrollment.findOneAndUpdate(
       { userId: userId },
